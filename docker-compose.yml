@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  selenium-automation:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: selenium-login
+    volumes:
+      - ./app:/app/app  # Mount only the app directory
+      - ./.env:/app/.env:ro  # Mount env file as read-only
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TZ=Asia/Kolkata  # Set appropriate timezone
+    env_file:
+      - .env
+    ports:
+      - "6060:6060"
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6060/docs"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
